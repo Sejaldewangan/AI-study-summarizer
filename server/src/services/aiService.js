@@ -275,6 +275,51 @@ ${text.slice(0, MAX_CHARS)}`;
   return raw.trim();
 }
 
+/** Returns a deck of flashcards: [{ front, back }]. */
+export async function generateFlashcards(text, count = 10) {
+  const n = Math.min(Math.max(parseInt(count, 10) || 10, 3), 30);
+  const prompt = `From the study material below, create exactly ${n} study flashcards.
+- "front": a concept, term, or question.
+- "back": a concise, correct explanation/answer (1-3 sentences).
+Cover the most important, high-yield points. Base everything on the material.
+Return ONLY JSON — a bare array or {"flashcards":[...]}, each item: {"front":"","back":""}
+
+Study material:
+${text.slice(0, MAX_CHARS)}`;
+
+  const raw = await generate(prompt, { json: true });
+  const cards = parseJsonArray(raw, ["flashcards", "cards"]).filter(
+    (c) => c && typeof c.front === "string" && typeof c.back === "string"
+  );
+  if (cards.length === 0) throw new Error("AI returned no valid flashcards. Try again.");
+  return cards.slice(0, n);
+}
+
+/** Short explanation of why an answer is correct (for quiz review). */
+export async function explainAnswer({ question, options = [], correctAnswer, userAnswer }) {
+  const prompt = `Quiz question: "${question}"
+Options: ${options.join("; ")}
+Correct answer: "${correctAnswer}"
+The student answered: "${userAnswer ?? "nothing"}".
+In 1-2 short sentences, explain plainly why the correct answer is right${
+    userAnswer && userAnswer !== correctAnswer ? " and why their choice is wrong" : ""
+  }. No preamble.`;
+  const raw = await generate(prompt, { json: false });
+  return raw.trim();
+}
+
+/** Answer a student's question using the material as context. */
+export async function askAboutMaterial(text, question) {
+  const prompt = `You are a study tutor. Using the study material below as your primary context, answer the student's question clearly and concisely. If the answer isn't in the material, say so briefly, then give your best general explanation.
+
+Student's question: "${question}"
+
+Study material:
+${text.slice(0, MAX_CHARS)}`;
+  const raw = await generate(prompt, { json: false });
+  return raw.trim();
+}
+
 /**
  * Personalized study-focus report from quiz performance.
  * @param {Object} p
@@ -314,19 +359,23 @@ Rules: base it only on the questions above, keep the whole report under 160 word
 
 // Accepts a bare array, an {questions:[...]} object, or fenced JSON.
 function safeParseArray(raw) {
-  const tryParse = (s) => {
-    const v = JSON.parse(s);
+  return parseJsonArray(raw, ["questions"]);
+}
+
+// Generic: bare array, {<key>:[...]} for any of `keys`, or array embedded in text.
+function parseJsonArray(raw, keys = []) {
+  const pick = (v) => {
     if (Array.isArray(v)) return v;
-    if (v && Array.isArray(v.questions)) return v.questions;
+    for (const k of keys) if (v && Array.isArray(v[k])) return v[k];
     return null;
   };
   try {
-    const v = tryParse(raw);
+    const v = pick(JSON.parse(raw));
     if (v) return v;
   } catch {
     /* fall through to regex extraction */
   }
   const match = raw.match(/\[[\s\S]*\]/);
   if (match) return JSON.parse(match[0]);
-  throw new Error("Could not parse AI quiz response as JSON");
+  throw new Error("Could not parse AI response as a JSON array");
 }

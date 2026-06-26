@@ -6,6 +6,9 @@ import {
   generateKeyTopics,
   generateQuiz,
   generateQuizFeedback,
+  generateFlashcards,
+  explainAnswer,
+  askAboutMaterial,
 } from "../services/aiService.js";
 
 // Load a material the requesting user owns, or throw 404/403.
@@ -119,6 +122,65 @@ export async function generateKeyTopicsHandler(req, res, next) {
   }
 }
 
+// POST /api/generate-flashcards   { materialId, count? }
+export async function generateFlashcardsHandler(req, res, next) {
+  try {
+    const { materialId, text, count } = req.body;
+    if (materialId) {
+      const material = await getOwnedMaterial(materialId, req.user._id, res);
+      const flashcards = await generateFlashcards(material.extractedText, count);
+      material.flashcards = flashcards;
+      await material.save();
+      return res.json({ flashcards, materialId: material._id });
+    }
+    if (!text) {
+      res.status(400);
+      throw new Error("Provide either materialId or text");
+    }
+    res.json({ flashcards: await generateFlashcards(text, count) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/explain-answer   { question, options, correctAnswer, userAnswer }
+export async function explainAnswerHandler(req, res, next) {
+  try {
+    const { question, options, correctAnswer, userAnswer } = req.body;
+    if (!question || !correctAnswer) {
+      res.status(400);
+      throw new Error("question and correctAnswer are required");
+    }
+    const explanation = await explainAnswer({ question, options, correctAnswer, userAnswer });
+    res.json({ explanation });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/ask   { materialId | text, question }
+export async function askHandler(req, res, next) {
+  try {
+    const { materialId, text, question } = req.body;
+    if (!question) {
+      res.status(400);
+      throw new Error("question is required");
+    }
+    let context = text;
+    if (materialId) {
+      const material = await getOwnedMaterial(materialId, req.user._id, res);
+      context = material.extractedText;
+    }
+    if (!context) {
+      res.status(400);
+      throw new Error("Provide materialId or text for context");
+    }
+    res.json({ answer: await askAboutMaterial(context, question) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // POST /api/generate-quiz   { materialId, difficulty } or { text, difficulty }
 export async function generateQuizHandler(req, res, next) {
   try {
@@ -165,6 +227,24 @@ export async function listMaterials(req, res, next) {
       createdAt: -1,
     });
     res.json(materials);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/materials/:id/attempts   { score, total, difficulty }
+export async function addQuizAttempt(req, res, next) {
+  try {
+    const material = await getOwnedMaterial(req.params.id, req.user._id, res);
+    const { score, total, difficulty = "Medium" } = req.body;
+    if (typeof score !== "number" || typeof total !== "number" || total <= 0) {
+      res.status(400);
+      throw new Error("score and total (number) are required");
+    }
+    const percentage = Math.round((score / total) * 100);
+    material.quizAttempts.push({ score, total, percentage, difficulty });
+    await material.save();
+    res.status(201).json({ quizAttempts: material.quizAttempts });
   } catch (err) {
     next(err);
   }

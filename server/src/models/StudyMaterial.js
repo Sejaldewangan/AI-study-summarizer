@@ -12,6 +12,16 @@ const questionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const attemptSchema = new mongoose.Schema(
+  {
+    score: { type: Number, required: true },
+    total: { type: Number, required: true },
+    percentage: { type: Number, required: true },
+    difficulty: { type: String, default: "Medium" },
+  },
+  { timestamps: { createdAt: "takenAt", updatedAt: false } }
+);
+
 const studyMaterialSchema = new mongoose.Schema(
   {
     userId: {
@@ -25,7 +35,9 @@ const studyMaterialSchema = new mongoose.Schema(
     extractedText: { type: String, required: true },
     summary: { type: String, default: "" },
     keyTopics: { type: String, default: "" },
+    flashcards: { type: [{ front: String, back: String, _id: false }], default: [] },
     quizData: { type: [questionSchema], default: [] },
+    quizAttempts: { type: [attemptSchema], default: [] },
   },
   { timestamps: true }
 );

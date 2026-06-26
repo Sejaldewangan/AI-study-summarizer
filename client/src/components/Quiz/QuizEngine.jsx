@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ResultsScreen from "./ResultsScreen.jsx";
 
-export default function QuizEngine({ questions, material, onRestart }) {
+export default function QuizEngine({ questions, material, difficulty, onAttemptSaved, onRestart }) {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null); // current question's pick
   const [answers, setAnswers] = useState([]); // picks per question
@@ -44,28 +44,33 @@ export default function QuizEngine({ questions, material, onRestart }) {
         answers={answers}
         score={score}
         material={material}
+        difficulty={difficulty}
+        onAttemptSaved={onAttemptSaved}
         onRetake={retake}
       />
     );
   }
 
   function optionClass(option) {
-    if (selected === null) return "border-slate-300 hover:border-indigo-400 hover:bg-indigo-50";
-    if (option === q.correctAnswer) return "border-emerald-500 bg-emerald-50 text-emerald-800";
-    if (option === selected) return "border-red-500 bg-red-50 text-red-700";
-    return "border-slate-200 opacity-60";
+    if (selected === null)
+      return "border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 dark:border-slate-600 dark:hover:border-indigo-400 dark:hover:bg-indigo-500/10";
+    if (option === q.correctAnswer)
+      return "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300";
+    if (option === selected)
+      return "border-red-500 bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300";
+    return "border-slate-200 opacity-60 dark:border-slate-700";
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between text-sm text-slate-500">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
         <span>
           Question {current + 1} of {questions.length}
         </span>
         <span>Score: {score}</span>
       </div>
 
-      <div className="mb-2 h-1.5 w-full rounded-full bg-slate-100">
+      <div className="mb-2 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800">
         <div
           className="h-1.5 rounded-full bg-indigo-500 transition-all"
           style={{ width: `${((current + (selected !== null ? 1 : 0)) / questions.length) * 100}%` }}

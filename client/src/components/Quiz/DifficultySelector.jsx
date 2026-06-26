@@ -19,7 +19,7 @@ export default function DifficultySelector({ material, onQuizReady }) {
         difficulty,
         count,
       });
-      onQuizReady(data.quizData);
+      onQuizReady(data.quizData, difficulty);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -28,15 +28,15 @@ export default function DifficultySelector({ material, onQuizReady }) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <h2 className="mb-4 text-lg font-semibold">Generate a Quiz</h2>
       <div className="flex flex-wrap items-end gap-4">
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-600">Difficulty</span>
+          <span className="mb-1 block font-medium text-slate-600 dark:text-slate-300">Difficulty</span>
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
             {LEVELS.map((l) => (
               <option key={l} value={l}>
@@ -46,11 +46,11 @@ export default function DifficultySelector({ material, onQuizReady }) {
           </select>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-600"># Questions</span>
+          <span className="mb-1 block font-medium text-slate-600 dark:text-slate-300"># Questions</span>
           <select
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
-            className="rounded-lg border border-slate-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
             {COUNTS.map((c) => (
               <option key={c} value={c}>

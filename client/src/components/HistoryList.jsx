@@ -37,10 +37,10 @@ export default function HistoryList({ activeId, refreshKey, onSelect, onDeleted 
   }
 
   return (
-    <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-700">📚 History</h2>
-        <button onClick={load} className="text-xs text-indigo-600 hover:underline">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">📚 History</h2>
+        <button onClick={load} className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
           Refresh
         </button>
       </div>
@@ -59,14 +59,20 @@ export default function HistoryList({ activeId, refreshKey, onSelect, onDeleted 
               <div
                 onClick={() => onSelect(m)}
                 className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition ${
-                  isActive ? "bg-indigo-50 text-indigo-800" : "hover:bg-slate-50 text-slate-700"
+                  isActive
+                    ? "bg-indigo-50 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-200"
+                    : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{m.topicName}</p>
                   <p className="text-[11px] text-slate-400">
-                    {new Date(m.createdAt).toLocaleDateString()} ·{" "}
-                    {m.quizData?.length ? `${m.quizData.length}Q` : "no quiz"}
+                    {new Date(m.createdAt).toLocaleDateString()}
+                    {m.quizAttempts?.length
+                      ? ` · best ${Math.max(...m.quizAttempts.map((a) => a.percentage))}% (${m.quizAttempts.length}×)`
+                      : m.quizData?.length
+                      ? ` · ${m.quizData.length}Q`
+                      : " · no quiz"}
                   </p>
                 </div>
                 <button

@@ -22,9 +22,9 @@ export default function KeyTopicsView({ material, onUpdated }) {
   }
 
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm">
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-6 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-amber-900">🔑 Key Topics to Improve</h2>
+        <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-300">🔑 Key Topics to Improve</h2>
         <button
           onClick={generate}
           disabled={loading}
@@ -37,11 +37,11 @@ export default function KeyTopicsView({ material, onUpdated }) {
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
       {material.keyTopics ? (
-        <div className="prose prose-slate max-w-none prose-li:my-0.5">
+        <div className="prose prose-slate max-w-none dark:prose-invert prose-li:my-0.5">
           <ReactMarkdown>{material.keyTopics}</ReactMarkdown>
         </div>
       ) : (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           Pull out the highest-yield topics from your material, each with a tip on how to
           improve. Click “Get Key Topics”.
         </p>

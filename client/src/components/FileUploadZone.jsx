@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import api from "../api/axios.js";
+import { AIProgressSteps } from "./ui/Skeleton.jsx";
 
 export default function FileUploadZone({ onUploaded }) {
   const inputRef = useRef(null);
@@ -47,7 +48,11 @@ export default function FileUploadZone({ onUploaded }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition
-          ${dragging ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400"}`}
+          ${
+            dragging
+              ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10"
+              : "border-slate-300 bg-white hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-400"
+          }`}
       >
         <input
           ref={inputRef}
@@ -57,18 +62,19 @@ export default function FileUploadZone({ onUploaded }) {
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {loading ? (
-          <div className="flex flex-col items-center gap-3">
-            <span className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-            <p className="text-sm text-slate-600">Uploading &amp; extracting text…</p>
-            {fileName && <p className="text-xs text-slate-400">{fileName}</p>}
+          <div className="w-full max-w-xs text-left" onClick={(e) => e.stopPropagation()}>
+            <AIProgressSteps steps={["Uploading file", "Extracting text", "Saving material"]} />
+            {fileName && <p className="text-center text-xs text-slate-400">{fileName}</p>}
           </div>
         ) : (
           <>
             <div className="mb-3 text-4xl">📤</div>
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-slate-700 dark:text-slate-200">
               Drag &amp; drop a PDF, Word doc, or textbook photo
             </p>
-            <p className="mt-1 text-sm text-slate-500">or click to browse (PDF, DOCX, PNG, JPG, WEBP)</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              or click to browse (PDF, DOCX, PNG, JPG, WEBP)
+            </p>
           </>
         )}
       </div>
