@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ResultsScreen from "./ResultsScreen.jsx";
 
-export default function QuizEngine({ questions, material, difficulty, onAttemptSaved, onRestart }) {
+export default function QuizEngine({ questions, material, difficulty, onAttemptSaved, onFeedback, onRestart }) {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null); // current question's pick
   const [answers, setAnswers] = useState([]); // picks per question
@@ -46,6 +46,7 @@ export default function QuizEngine({ questions, material, difficulty, onAttemptS
         material={material}
         difficulty={difficulty}
         onAttemptSaved={onAttemptSaved}
+        onFeedback={onFeedback}
         onRetake={retake}
       />
     );

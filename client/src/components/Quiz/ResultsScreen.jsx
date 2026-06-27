@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import { Lightbulb } from "lucide-react";
 import api from "../../api/axios.js";
 import CircularScore from "./CircularScore.jsx";
 import AttemptHistoryChart from "./AttemptHistoryChart.jsx";
-import { SkeletonLines } from "../ui/Skeleton.jsx";
 
 export default function ResultsScreen({
   questions,
@@ -13,11 +11,9 @@ export default function ResultsScreen({
   material,
   difficulty,
   onAttemptSaved,
+  onFeedback,
   onRetake,
 }) {
-  const [feedback, setFeedback] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [attempts, setAttempts] = useState([]);
   const [explain, setExplain] = useState({}); // index -> { loading, text, error }
 
@@ -28,9 +24,9 @@ export default function ResultsScreen({
     correct: answers[i] === q.correctAnswer,
   }));
 
+  // Generate the study-focus report and lift it up to the left column.
   async function loadFeedback() {
-    setLoading(true);
-    setError("");
+    onFeedback?.({ loading: true });
     try {
       const { data } = await api.post("/quiz-feedback", {
         topicName: material?.topicName,
@@ -38,11 +34,9 @@ export default function ResultsScreen({
         total: questions.length,
         items,
       });
-      setFeedback(data.feedback);
+      onFeedback?.({ text: data.feedback });
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      onFeedback?.({ error: err.message });
     }
   }
 
@@ -154,27 +148,6 @@ export default function ResultsScreen({
             );
           })}
         </div>
-      </div>
-
-      {/* AI study-focus report */}
-      <div className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-6 shadow-sm dark:border-indigo-500/30 dark:bg-indigo-500/5">
-        <h3 className="mb-3 text-lg font-semibold text-indigo-900 dark:text-indigo-300">
-          📌 Your Study Focus
-        </h3>
-        {loading && <SkeletonLines lines={4} />}
-        {error && (
-          <div className="text-sm">
-            <p className="text-red-600">{error}</p>
-            <button onClick={loadFeedback} className="mt-2 font-medium text-indigo-600 hover:underline">
-              Retry analysis
-            </button>
-          </div>
-        )}
-        {!loading && !error && feedback && (
-          <div className="prose prose-slate max-w-none dark:prose-invert prose-headings:mt-4 prose-headings:mb-1 prose-p:my-1 prose-li:my-0.5">
-            <ReactMarkdown>{feedback}</ReactMarkdown>
-          </div>
-        )}
       </div>
 
       <button

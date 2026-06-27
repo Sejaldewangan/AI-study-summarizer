@@ -9,9 +9,19 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
+// CLIENT_URL may be a comma-separated list (e.g. localhost + deployed URL).
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin(origin, cb) {
+      // allow no-origin requests (health checks, curl) and any whitelisted origin
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
@@ -28,7 +38,7 @@ const PORT = process.env.PORT || 5000;
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => console.log(`🚀 Server on http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Server listening on port ${PORT}`));
   })
   .catch((err) => {
     console.error("Failed to start — DB connection error:", err.message);

@@ -4,6 +4,9 @@
   "description": "AI-Powered Study Platform — Express API (upload, OCR, Gemini summary + quiz)",
   "type": "module",
   "main": "src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"

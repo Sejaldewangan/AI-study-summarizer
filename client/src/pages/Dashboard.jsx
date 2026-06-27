@@ -3,6 +3,7 @@ import { ListChecks, Layers } from "lucide-react";
 import FileUploadZone from "../components/FileUploadZone.jsx";
 import SummaryView from "../components/SummaryView.jsx";
 import KeyTopicsView from "../components/KeyTopicsView.jsx";
+import StudyFocusView from "../components/StudyFocusView.jsx";
 import HistoryList from "../components/HistoryList.jsx";
 import FlashcardDeck from "../components/FlashcardDeck.jsx";
 import AskAIDrawer from "../components/AskAIDrawer.jsx";
@@ -15,25 +16,30 @@ export default function Dashboard() {
   const [difficulty, setDifficulty] = useState("Medium");
   const [refreshKey, setRefreshKey] = useState(0);
   const [tab, setTab] = useState("quiz"); // quiz | flashcards
+  const [studyFocus, setStudyFocus] = useState(null); // post-quiz report (lifted)
 
   function startQuiz(questions, level) {
     setQuiz(questions);
     setDifficulty(level || "Medium");
+    setStudyFocus(null); // fresh quiz → clear old report
   }
   function handleUploaded(doc) {
     setMaterial(doc);
     setQuiz(null);
     setTab("quiz");
+    setStudyFocus(null);
     setRefreshKey((k) => k + 1);
   }
   function openFromHistory(doc) {
     setMaterial(doc);
     setQuiz(doc.quizData?.length ? doc.quizData : null);
     setTab("quiz");
+    setStudyFocus(null);
   }
   function reset() {
     setMaterial(null);
     setQuiz(null);
+    setStudyFocus(null);
   }
   function handleDeleted(id) {
     if (material?._id === id) reset();
@@ -84,6 +90,7 @@ export default function Dashboard() {
               <div className="space-y-6">
                 <SummaryView material={material} onUpdated={setMaterial} />
                 <KeyTopicsView material={material} onUpdated={setMaterial} />
+                <StudyFocusView state={studyFocus} />
               </div>
 
               {/* Right: test yourself (tabs) */}
@@ -105,6 +112,7 @@ export default function Dashboard() {
                         material={material}
                         difficulty={difficulty}
                         onAttemptSaved={() => setRefreshKey((k) => k + 1)}
+                        onFeedback={setStudyFocus}
                         onRestart={() => {}}
                       />
                       <button
