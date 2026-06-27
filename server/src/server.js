@@ -15,13 +15,19 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .map((s) => s.trim())
   .filter(Boolean);
 
+// Also allow this project's Vercel deployments (prod + preview URLs).
+const vercelRe = /^https:\/\/ai-study-summarizer[\w-]*\.vercel\.app$/;
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // health checks, curl, server-to-server
+  if (allowedOrigins.includes(origin)) return true;
+  return vercelRe.test(origin);
+}
+
 app.use(
   cors({
-    origin(origin, cb) {
-      // allow no-origin requests (health checks, curl) and any whitelisted origin
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-      cb(new Error(`CORS blocked for origin: ${origin}`));
-    },
+    // Never throw here — a thrown error makes the CORS preflight return 500.
+    origin: (origin, cb) => cb(null, isAllowedOrigin(origin)),
     credentials: true,
   })
 );
