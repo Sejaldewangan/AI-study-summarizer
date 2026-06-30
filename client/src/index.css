@@ -2,8 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
   height: 100%;
+}
+
+/* Never allow accidental horizontal scroll from decorative/overflow elements */
+body {
+  overflow-x: hidden;
+}
+
+/* Smooth crossfade only while toggling light/dark (class added briefly by ThemeContext) */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease,
+    fill 0.35s ease, stroke 0.35s ease, box-shadow 0.35s ease !important;
+}
+
+@layer components {
+  /* Frosted-glass surface for cards/overlays */
+  .glass {
+    @apply border border-white/40 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60;
+  }
+  .glass-soft {
+    @apply border border-white/30 bg-white/50 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40;
+  }
+}
+
+/* Slim, theme-aware scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.5) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(148 163 184 / 0.45);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(148 163 184 / 0.7);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

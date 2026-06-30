@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { BookOpen } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Register() {
@@ -15,7 +17,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -23,18 +25,38 @@ export default function Register() {
     }
   }
 
+  const inputCls =
+    "w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2.5 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100";
+
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="mb-6 text-2xl font-bold">Create your account</h1>
+    <div className="relative flex min-h-[calc(100dvh-3.75rem)] items-center justify-center overflow-hidden px-4 py-12">
+      <div className="pointer-events-none absolute -top-24 right-1/4 h-72 w-72 rounded-full bg-purple-400/20 blur-3xl dark:bg-purple-600/20" />
+      <div className="pointer-events-none absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-600/20" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className="glass relative w-full max-w-sm rounded-2xl p-6 shadow-xl sm:p-8"
+      >
+        <div className="mb-6 flex items-center gap-2">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white">
+            <BookOpen size={18} />
+          </span>
+          <h1 className="text-2xl font-bold">Create account</h1>
+        </div>
+
         {error && (
-          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-300">
+            {error}
+          </p>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             required
             placeholder="Name"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={inputCls}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
@@ -42,7 +64,7 @@ export default function Register() {
             type="email"
             required
             placeholder="Email"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={inputCls}
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -51,25 +73,26 @@ export default function Register() {
             required
             minLength={6}
             placeholder="Password (min 6 chars)"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={inputCls}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/20 transition hover:shadow-indigo-600/40 active:scale-[0.99] disabled:opacity-60"
           >
             {loading ? "Creating…" : "Create account"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
+
+        <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           Already have an account?{" "}
-          <Link to="/login" className="font-medium text-indigo-600 hover:underline">
+          <Link to="/login" className="font-medium text-indigo-600 hover:underline dark:text-indigo-400">
             Sign in
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

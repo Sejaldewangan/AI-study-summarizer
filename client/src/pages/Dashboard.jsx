@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ListChecks, Layers } from "lucide-react";
+import { motion } from "framer-motion";
+import { ListChecks, Layers, History, ChevronDown } from "lucide-react";
 import FileUploadZone from "../components/FileUploadZone.jsx";
 import SummaryView from "../components/SummaryView.jsx";
 import KeyTopicsView from "../components/KeyTopicsView.jsx";
@@ -15,13 +16,14 @@ export default function Dashboard() {
   const [quiz, setQuiz] = useState(null);
   const [difficulty, setDifficulty] = useState("Medium");
   const [refreshKey, setRefreshKey] = useState(0);
-  const [tab, setTab] = useState("quiz"); // quiz | flashcards
-  const [studyFocus, setStudyFocus] = useState(null); // post-quiz report (lifted)
+  const [tab, setTab] = useState("quiz");
+  const [studyFocus, setStudyFocus] = useState(null);
+  const [showHistory, setShowHistory] = useState(false); // mobile drawer
 
   function startQuiz(questions, level) {
     setQuiz(questions);
     setDifficulty(level || "Medium");
-    setStudyFocus(null); // fresh quiz → clear old report
+    setStudyFocus(null);
   }
   function handleUploaded(doc) {
     setMaterial(doc);
@@ -35,6 +37,7 @@ export default function Dashboard() {
     setQuiz(doc.quizData?.length ? doc.quizData : null);
     setTab("quiz");
     setStudyFocus(null);
+    setShowHistory(false);
   }
   function reset() {
     setMaterial(null);
@@ -46,28 +49,47 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Study Dashboard</h1>
-        <p className="text-slate-600 dark:text-slate-400">
+    <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl font-bold sm:text-2xl">Study Dashboard</h1>
+        <p className="text-sm text-slate-600 dark:text-slate-400 sm:text-base">
           Upload a PDF, Word doc, or photo — study and test yourself side-by-side.
         </p>
       </div>
 
+      {/* Mobile history toggle */}
+      <button
+        onClick={() => setShowHistory((s) => !s)}
+        className="mb-4 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white/70 px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/70 lg:hidden"
+      >
+        <span className="flex items-center gap-2">
+          <History size={16} /> History
+        </span>
+        <ChevronDown size={16} className={`transition ${showHistory ? "rotate-180" : ""}`} />
+      </button>
+
       <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-        <HistoryList
-          activeId={material?._id}
-          refreshKey={refreshKey}
-          onSelect={openFromHistory}
-          onDeleted={handleDeleted}
-        />
+        {/* History — collapsible on mobile, always on lg */}
+        <div className={`${showHistory ? "block" : "hidden"} lg:block`}>
+          <HistoryList
+            activeId={material?._id}
+            refreshKey={refreshKey}
+            onSelect={openFromHistory}
+            onDeleted={handleDeleted}
+          />
+        </div>
 
         {!material ? (
           <FileUploadZone onUploaded={handleUploaded} />
         ) : (
-          <div className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-4"
+          >
             {/* Material header */}
-            <div className="flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-500/10">
+            <div className="glass-soft flex items-center justify-between rounded-xl px-4 py-3">
               <div className="min-w-0">
                 <p className="truncate font-medium text-indigo-900 dark:text-indigo-200">
                   {material.topicName}
@@ -80,22 +102,20 @@ export default function Dashboard() {
                 onClick={reset}
                 className="shrink-0 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-300"
               >
-                + New upload
+                + New
               </button>
             </div>
 
             {/* Split-screen workspace */}
             <div className="grid gap-6 xl:grid-cols-2">
-              {/* Left: study material */}
               <div className="space-y-6">
                 <SummaryView material={material} onUpdated={setMaterial} />
                 <KeyTopicsView material={material} onUpdated={setMaterial} />
                 <StudyFocusView state={studyFocus} />
               </div>
 
-              {/* Right: test yourself (tabs) */}
               <div className="space-y-4">
-                <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+                <div className="glass-soft flex gap-1 rounded-xl p-1">
                   <TabButton active={tab === "quiz"} onClick={() => setTab("quiz")} icon={ListChecks}>
                     Quiz
                   </TabButton>
@@ -130,7 +150,7 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
